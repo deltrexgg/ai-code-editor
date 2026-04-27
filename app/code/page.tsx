@@ -9,7 +9,7 @@ export default function DashboardPage() {
       
       {/* Header */}
       <header className="h-14 border-b border-white/10 px-6 flex items-center justify-between shrink-0">
-        <h1 className="font-bold text-xl">AICode Studio</h1>
+        <a href="/dashboard"><h1 className="font-bold text-xl">AICode Studio</h1></a>
 
         <button className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-semibold">
           Publish
@@ -64,7 +64,7 @@ export default function DashboardPage() {
         <aside
           className={`border-l border-white/10 bg-slate-900 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
             chatOpen
-              ? "w-[500px] opacity-100"
+              ? "w-125 opacity-100"
               : "w-0 opacity-0 overflow-hidden border-l-0"
           }`}
         >
