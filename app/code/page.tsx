@@ -83,7 +83,7 @@ export default function DashboardPage() {
           {/* Embedded Chat App */}
           <div className="flex-1 p-3 min-h-0">
             <iframe
-              src="http://192.168.29.200:8080"
+              src="http://100.104.225.96:8080"
               className="w-full h-full rounded-2xl bg-white"
             />
           </div>
