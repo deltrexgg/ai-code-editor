@@ -12,7 +12,7 @@ export default function DashboardPage() {
         <h1 className="font-bold text-xl">AICode Studio</h1>
 
         <button className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-semibold">
-          New Project
+          Publish
         </button>
       </header>
 
