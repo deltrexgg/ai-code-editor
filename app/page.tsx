@@ -6,7 +6,7 @@ export default function HomePage() {
       
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-6 border-b border-white/10">
-        <h1 className="text-2xl font-bold tracking-tight">AICode Studio</h1>
+        <h1 className="text-2xl font-bold tracking-tight">AI Agent Code Studio</h1>
 
         <div className="flex gap-3">
           <Link
