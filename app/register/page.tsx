@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { api } from "../lib/api";
 import { useRouter } from "next/navigation";
+import { useAuthRedirectToDash } from "../lib/auth_middleware";
+
 
 export default function RegisterPage() {
+  useAuthRedirectToDash()
   const router = useRouter();
 
   const [form, setForm] = useState({

@@ -1,8 +1,11 @@
+'use client'
 import Link from "next/link";
+import { useAuthRedirectToDash } from "./lib/auth_middleware";
 
 export default function HomePage() {
+  useAuthRedirectToDash()
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
+    <main className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
       
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-6 border-b border-white/10">

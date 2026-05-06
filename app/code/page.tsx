@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useAuthRedirectToRoot } from "../lib/auth_middleware";
+
 
 export default function DashboardPage() {
+
+  useAuthRedirectToRoot()
+
   const [chatOpen, setChatOpen] = useState(true);
 
   return (
@@ -9,7 +14,7 @@ export default function DashboardPage() {
       
       {/* Header */}
       <header className="h-14 border-b border-white/10 px-6 flex items-center justify-between shrink-0">
-        <a href="/dashboard"><h1 className="font-bold text-xl">AICode Studio</h1></a>
+        <a href="/dashboard"><h1 className="font-bold text-xl">AI Agent Code Studio</h1></a>
 
         <button className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-semibold">
           Publish
@@ -83,7 +88,7 @@ export default function DashboardPage() {
           {/* Embedded Chat App */}
           <div className="flex-1 p-3 min-h-0">
             <iframe
-              src="http://100.104.225.96:8080"
+              src="http://192.168.29.200:8080"
               className="w-full h-full rounded-2xl bg-white"
             />
           </div>

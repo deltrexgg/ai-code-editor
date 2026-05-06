@@ -4,8 +4,11 @@ import { useState } from "react";
 import { api } from "../lib/api";
 import { useRouter } from "next/navigation";
 import { setUserSession } from "../lib/session";
+import { useAuthRedirectToDash } from "../lib/auth_middleware";
 
 export default function LoginPage() {
+  useAuthRedirectToDash()
+  
   const router = useRouter();
 
   const [form, setForm] = useState({

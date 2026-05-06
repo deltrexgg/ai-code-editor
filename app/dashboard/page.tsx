@@ -5,6 +5,7 @@ import Image from "next/image";
 import { api } from "../lib/api";
 import { useRouter } from "next/navigation";
 import { getUserSession, clearUserSession } from "../lib/session";
+import { useAuthRedirectToRoot } from "../lib/auth_middleware";
 
 type FileItem = {
   name: string;
@@ -12,6 +13,8 @@ type FileItem = {
 };
 
 export default function DashboardPage() {
+  useAuthRedirectToRoot();
+
   const router = useRouter();
 
   const [user, setUser] = useState<any>(null);
@@ -112,7 +115,7 @@ export default function DashboardPage() {
 
       const parsed = JSON.parse(cleaned);
 
-      let extractedFiles = [];
+      let extractedFiles: FileItem[] = [];
 
       if (Array.isArray(parsed.files)) {
         extractedFiles = parsed.files.map((item: any) => ({
@@ -152,6 +155,32 @@ export default function DashboardPage() {
     }
   };
 
+  // ✅ CREATE PROJECT API CALL
+  const createProject = async () => {
+    try {
+      if (!user?.id) {
+        alert("User not found");
+        return;
+      }
+
+      await api("/project/create", {
+        method: "POST",
+        body: {
+          user_id: user.id,
+          project_name: projectName,
+          description: description,
+          tech_stack: techStack,
+          files: files.map((f) => f.name),
+        },
+      });
+
+      router.push("/code");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create project");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <header className="h-16 border-b border-white/10 px-8 flex items-center justify-between">
@@ -174,7 +203,6 @@ export default function DashboardPage() {
               alt="Profile"
               width={64}
               height={64}
-              className="w-full h-full object-cover"
             />
           </div>
 
@@ -227,7 +255,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ✅ Create Project Modal */}
+      {/* Create Project Modal */}
       {openModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-white/10 p-8">
@@ -239,6 +267,8 @@ export default function DashboardPage() {
 
             <input
               type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
               placeholder="Project Name"
               className="w-full p-4 rounded-xl bg-slate-950 border border-white/10"
             />
@@ -248,60 +278,21 @@ export default function DashboardPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your app idea..."
-              className="w-full p-4 rounded-xl bg-slate-950 border border-white/10 resize-none mt-4"
+              className="w-full p-4 rounded-xl bg-slate-950 border border-white/10 mt-4"
             />
 
             <button
               onClick={generateFiles}
               disabled={loading}
-              className="mt-4 w-full p-3 rounded-xl bg-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-3"
+              className="mt-4 w-full p-3 rounded-xl bg-cyan-400 text-slate-950 font-bold"
             >
               {loading ? loadingStep : "Generate Project"}
             </button>
           </div>
         </div>
       )}
- {openModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-white/10 p-8">
 
-            <div className="flex justify-between mb-6">
-              <h2 className="text-2xl font-bold">Create New Project</h2>
-              <button onClick={() => setOpenModal(false)}>✕</button>
-            </div>
-
-            <input
-  type="text"
-  placeholder="Project Name"
-  className="w-full p-4 rounded-xl bg-slate-950 border border-white/10 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition placeholder:text-slate-500"
-/>
-            
-            <textarea
-              rows={6}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your app idea..."
-              className="w-full p-4 rounded-xl bg-slate-950 border border-white/10 resize-none"
-            />
-
-            <button
-  onClick={generateFiles}
-  disabled={loading}
-  className="mt-4 w-full p-3 rounded-xl bg-cyan-400 text-slate-950 font-bold flex items-center justify-center gap-3"
->
-  {loading ? (
-    <>
-      <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-      <span>{loadingStep}</span>
-    </>
-  ) : (
-    "Generate Project"
-  )}
-</button>
-          </div>
-        </div>
-      )}
-
+      {/* Files Modal */}
       {showFilesModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-3xl rounded-3xl bg-slate-900 border border-white/10 p-8">
@@ -309,62 +300,33 @@ export default function DashboardPage() {
             <div className="flex justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold">{projectName}</h2>
-                <p className="text-slate-400 text-sm mt-1">{techStack}</p>
-                <p className="text-slate-500 text-xs mt-1">
-                  Version {version} • {status}
-                </p>
+                <p className="text-slate-400 text-sm">{techStack}</p>
               </div>
 
               <button onClick={() => setShowFilesModal(false)}>✕</button>
             </div>
 
-            <div className="space-y-3 max-h-[430px] overflow-auto">
-
+            <div className="space-y-3 max-h-[400px] overflow-auto">
               {files.map((file, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-2xl bg-slate-950 border border-white/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <div>📄</div>
-
-                    <input
-                      value={file.name}
-                      onChange={(e) => updateFile(index, e.target.value)}
-                      className="flex-1 bg-transparent outline-none font-medium"
-                    />
-
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="w-10 h-10 rounded-xl bg-red-500/20 hover:bg-red-500"
-                    >
-                      ❌
-                    </button>
-                  </div>
-
-                  <p className="text-sm text-slate-400 mt-2 ml-8">
-                    {file.description || "No description available."}
+                <div key={index} className="p-4 bg-slate-950 rounded-xl">
+                  <input
+                    value={file.name}
+                    onChange={(e) => updateFile(index, e.target.value)}
+                    className="w-full bg-transparent outline-none"
+                  />
+                  <p className="text-sm text-slate-400">
+                    {file.description}
                   </p>
                 </div>
               ))}
-
             </div>
 
-            <div className="mt-6 space-y-3">
-              <button
-                onClick={addFile}
-                className="w-full p-3 rounded-xl border border-white/10 hover:bg-white/5"
-              >
-                + Add File
-              </button>
-
-              <button
-                onClick={() => (window.location.href = "/code")}
-                className="w-full p-3 rounded-xl bg-cyan-400 text-slate-950 font-bold"
-              >
-                Start Coding →
-              </button>
-            </div>
+            <button
+              onClick={createProject}
+              className="mt-6 w-full p-3 rounded-xl bg-cyan-400 text-slate-950 font-bold"
+            >
+              Start Coding →
+            </button>
 
           </div>
         </div>
