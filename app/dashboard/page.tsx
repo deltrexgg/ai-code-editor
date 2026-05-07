@@ -31,17 +31,20 @@ export default function DashboardPage() {
   const [version, setVersion] = useState("1.0.0");
   const [status, setStatus] = useState("Draft");
   const [loadingStep, setLoadingStep] = useState("Initializing AI...");
+  const [projectList, setProjectList] = useState<any>([])
 
   useEffect(() => {
-    const sessionUser = getUserSession();
+  const sessionUser = getUserSession();
 
-    if (!sessionUser) {
-      router.push("/");
-      return;
-    }
+  if (!sessionUser) {
+    router.push("/");
+    return;
+  }
 
-    setUser(sessionUser);
-  }, []);
+  setUser(sessionUser);
+
+  getProjectsList(sessionUser.id);
+}, []);
 
   if (!user) return null;
 
@@ -49,12 +52,6 @@ export default function DashboardPage() {
     clearUserSession();
     router.push("/");
   };
-
-  const projects = [
-    { name: "School Website", stack: "HTML/CSS/JS", updated: "2h ago" },
-    { name: "Portfolio App", stack: "Next.js", updated: "Yesterday" },
-    { name: "Blog Platform", stack: "Go + React", updated: "3 days ago" },
-  ];
 
   const updateFile = (index: number, value: string) => {
     const updated = [...files];
@@ -180,6 +177,25 @@ export default function DashboardPage() {
     }
   };
 
+  async function getProjectsList(userID: string) {
+  try {
+    const data = await api(
+      `/project/details?user_id=${userID}`,
+      {
+        method: "GET",
+      }
+    );
+
+    setProjectList(data.data);
+
+    console.log("projects : ", data);
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to get projects");
+  }
+}
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <header className="h-16 border-b border-white/10 px-8 flex items-center justify-between">
@@ -230,15 +246,15 @@ export default function DashboardPage() {
           <h2 className="text-xl font-bold mb-5">My Projects</h2>
 
           <div className="space-y-4">
-            {projects.map((p) => (
+            {projectList.map((p : any) => (
               <div
-                key={p.name}
+                key={p.id}
                 className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex justify-between"
               >
                 <div>
-                  <h3 className="font-semibold">{p.name}</h3>
+                  <h3 className="font-semibold">{p.project_name}</h3>
                   <p className="text-sm text-slate-400">
-                    {p.stack} • {p.updated}
+                    {p.tech_stack} • {p.created_at}
                   </p>
                 </div>
 
@@ -305,7 +321,7 @@ export default function DashboardPage() {
               <button onClick={() => setShowFilesModal(false)}>✕</button>
             </div>
 
-            <div className="space-y-3 max-h-[400px] overflow-auto">
+            <div className="space-y-3 max-h-100 overflow-auto">
               {files.map((file, index) => (
                 <div key={index} className="p-4 bg-slate-950 rounded-xl">
                   <input
