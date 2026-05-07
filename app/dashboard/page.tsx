@@ -174,7 +174,6 @@ export default function DashboardPage() {
         },
       });
 
-      router.push("/code");
     } catch (err) {
       console.error(err);
       alert("Failed to create project");
