@@ -119,7 +119,7 @@ async function deleteFile(filename:any) {
 
       <button
         onClick={() => deleteFile(p)}
-        className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-500/20 hover:bg-red-500 transition shrink-0"
+        className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-250/20 hover:bg-red-250 transition shrink-0"
       >
         <img
           src="/delete-icon.png"
@@ -193,7 +193,7 @@ async function deleteFile(filename:any) {
           onClick={() => setChatOpen(true)}
           className="fixed right-6 top-20 px-4 py-3 rounded-2xl bg-cyan-400 text-slate-950 font-bold shadow-xl hover:scale-105 transition"
         >
-          Open AI Chat
+          AI Agent
         </button>
       )}
     </main>
