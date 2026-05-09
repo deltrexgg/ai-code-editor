@@ -171,6 +171,8 @@ export default function DashboardPage() {
         },
       });
 
+      setShowFilesModal(false)
+
     } catch (err) {
       console.error(err);
       alert("Failed to create project");
@@ -321,20 +323,41 @@ export default function DashboardPage() {
               <button onClick={() => setShowFilesModal(false)}>✕</button>
             </div>
 
-            <div className="space-y-3 max-h-100 overflow-auto">
-              {files.map((file, index) => (
-                <div key={index} className="p-4 bg-slate-950 rounded-xl">
-                  <input
-                    value={file.name}
-                    onChange={(e) => updateFile(index, e.target.value)}
-                    className="w-full bg-transparent outline-none"
-                  />
-                  <p className="text-sm text-slate-400">
-                    {file.description}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <div className="space-y-3 max-h-[420px] overflow-auto">
+  {files.map((file, index) => (
+    <div
+      key={index}
+      className="p-4 rounded-2xl bg-slate-950 border border-white/10"
+    >
+      <div className="flex items-center gap-3">
+        <div>📄</div>
+
+        <input
+          value={file.name}
+          onChange={(e) => updateFile(index, e.target.value)}
+          className="flex-1 bg-transparent outline-none"
+        />
+
+        <button
+          onClick={() => removeFile(index)}
+          className="w-10 h-10 rounded-xl bg-red-500/20 hover:bg-red-500"
+        >
+          ❌
+        </button>
+      </div>
+
+      <p className="text-sm text-slate-400 mt-2 ml-8">
+        {file.description || "No description available."}
+      </p>
+    </div>
+  ))}
+</div>
+<button
+  onClick={addFile}
+  className="mt-4 w-full p-3 rounded-xl border border-white/10 hover:bg-white/5"
+>
+  + Add File
+</button>
 
             <button
               onClick={createProject}
