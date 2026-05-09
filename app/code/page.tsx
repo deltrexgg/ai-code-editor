@@ -11,11 +11,16 @@ export default function DashboardPage() {
 
   useAuthRedirectToRoot()
 
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [files, setFiles] = useState([])
 
   const [currentFile, setCurrentFile] = useState("")
   const [fileText, setFileText] = useState("")
+
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
 
@@ -169,11 +174,62 @@ async function addFile() {
 
 }
 
+const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+
+    setTimeout(() => {
+      setToast(null);
+
+    }, 1500);
+  };
+
+async function saveFile() {
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+  await api("/project/file/write", {
+    method: "POST",
+    body: {
+      user_id : user.id,
+      project_id: projectID,
+      file_name: currentFile,
+      content: fileText,
+    },
+  });
+
+  showToast(`File Saved : ${currentFile}`,"success")
+  
+}
+
 
 
   return (
     <main className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
-      
+      {/* 🔔 Toast */}
+      {toast && (
+        <div
+          className={`fixed top-5 right-5 px-5 py-3 rounded-xl shadow-lg border 
+          ${
+            toast.type === "success"
+              ? "bg-green-500/90 border-green-300"
+              : "bg-red-500/90 border-red-300"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
       {/* Header */}
       <header className="h-14 border-b border-white/10 px-6 flex items-center justify-between shrink-0">
         <a href="/dashboard"><h1 className="font-bold text-xl">AI Agent Code Studio</h1></a>
@@ -230,13 +286,23 @@ async function addFile() {
           {/* Editor Header */}
           <div className="h-10 border-b border-white/10 px-4 flex items-center text-sm text-slate-300 shrink-0">
             {currentFile} 
-            <button className="px-4 ext-slate-200 border-white/10 hover:text-white text-s hover:scale-105 transition">save</button>
+            <button
+  onClick={saveFile}
+  className="px-4 text-slate-200 hover:text-white hover:scale-105 transition"
+>
+  save
+</button>
           </div>
 
           {/* Editor */}
-          <div className="flex-1 p-4 bg-slate-950 font-mono text-sm overflow-auto">
-            <pre>{fileText}</pre>
-          </div>
+          <div className="flex-1 bg-slate-950 overflow-hidden">
+  <textarea
+    value={fileText}
+    onChange={(e) => setFileText(e.target.value)}
+    spellCheck={false}
+    className="w-full h-full resize-none bg-slate-950 text-slate-100 p-4 outline-none font-mono text-sm"
+  />
+</div>
 
           {/* Terminal */}
           <div className="h-52 border-t border-white/10 bg-black p-4 font-mono text-sm overflow-auto shrink-0">
@@ -287,4 +353,8 @@ async function addFile() {
       )}
     </main>
   );
+}
+
+function setToast(arg0: null) {
+  throw new Error("Function not implemented.");
 }
