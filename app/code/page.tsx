@@ -14,10 +14,17 @@ export default function DashboardPage() {
   const [chatOpen, setChatOpen] = useState(true);
   const [files, setFiles] = useState([])
 
+  const [currentFile, setCurrentFile] = useState("")
+  const [fileText, setFileText] = useState("")
+
   useEffect(() => {
 
     getProjectFiles()
   }, [])
+
+  useEffect(() => {
+    
+  },[currentFile])
 
 async function getProjectFiles() {
 
@@ -84,6 +91,41 @@ async function deleteFile(filename:any) {
 
   getProjectFiles()
 
+}
+
+async function fileData(filename: any){
+  console.log("Triggered getfile")
+
+  if (!filename) {
+    console.log(currentFile)
+    return
+  }
+
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+
+  const data = await api(
+    `/project/file/read?user_id=${user.id}&project_id=${projectID}&file=${filename}`,
+    {
+      method: "GET",
+    }
+  );
+
+  setFileText(data.data || "")
+  setCurrentFile(filename)
 }
 
 
@@ -156,8 +198,9 @@ async function addFile() {
           <div className="space-y-2 text-sm text-slate-300">
   {files.map((p: any) => (
     <div
-      key={p}
-      className="flex items-center justify-between bg-slate-800/60 border border-white/5 rounded-xl px-4 py-3"
+    key={p}
+    onClick={() => fileData(p)}
+    className="flex items-center justify-between bg-slate-800/60 border border-white/5 rounded-xl px-4 py-3"
     >
       <p
         title={p}
@@ -186,16 +229,13 @@ async function addFile() {
 
           {/* Editor Header */}
           <div className="h-10 border-b border-white/10 px-4 flex items-center text-sm text-slate-300 shrink-0">
-            page.tsx
+            {currentFile} 
+            <button className="px-4 ext-slate-200 border-white/10 hover:text-white text-s hover:scale-105 transition">save</button>
           </div>
 
           {/* Editor */}
           <div className="flex-1 p-4 bg-slate-950 font-mono text-sm overflow-auto">
-            <pre>{`export default function Home() {
-  return (
-    <div>Hello World</div>
-  )
-}`}</pre>
+            <pre>{fileText}</pre>
           </div>
 
           {/* Terminal */}
