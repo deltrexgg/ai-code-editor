@@ -86,6 +86,49 @@ async function deleteFile(filename:any) {
 
 }
 
+
+async function addFile() {
+
+  const filename = prompt("Enter File Name")
+
+  if (!filename) {
+    return
+  }
+
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+
+  await api(
+    `/project/file/add`,
+    {
+      method: "POST",
+      body: {
+        user_id: user.id,
+        project_id: projectID,
+        file_name: filename
+      }
+    }
+  );
+
+  getProjectFiles()
+
+}
+
+
+
   return (
     <main className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       
@@ -102,7 +145,13 @@ async function deleteFile(filename:any) {
       <div className="flex flex-1 overflow-hidden">
         {/* File Explorer */}
         <aside className="w-64 border-r border-white/10 bg-slate-900 p-4 overflow-y-auto shrink-0">
-          <h2 className="font-semibold mb-4">Files</h2>
+          <h2 className="font-semibold mb-4">Files</h2> 
+          <button
+  onClick={addFile}
+  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-400 text-slate-950 text-xs font-semibold hover:bg-cyan-300 transition"
+>
+  ➕ Add
+</button>
 
           <div className="space-y-2 text-sm text-slate-300">
   {files.map((p: any) => (
