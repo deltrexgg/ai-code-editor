@@ -19,4 +19,5 @@ export function getUserSession(): User | null {
 
 export function clearUserSession() {
   sessionStorage.removeItem(USER_KEY);
+  sessionStorage.clear()
 }

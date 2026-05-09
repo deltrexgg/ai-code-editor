@@ -1,13 +1,90 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthRedirectToRoot } from "../lib/auth_middleware";
+import { useRouter } from "next/navigation";
+import { api } from "../lib/api";
 
 
 export default function DashboardPage() {
 
+  const router = useRouter();
+
   useAuthRedirectToRoot()
 
   const [chatOpen, setChatOpen] = useState(true);
+  const [files, setFiles] = useState([])
+
+  useEffect(() => {
+
+    getProjectFiles()
+  }, [])
+
+async function getProjectFiles() {
+
+   const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+
+  const data = await api(
+    `/project/file/get?user_id=${user.id}&project_id=${projectID}`,
+    {
+      method: "GET",
+    }
+  );
+
+  setFiles(data.data || [])
+  console.log("Files :", data);
+}
+
+async function deleteFile(filename:any) {
+
+   if (confirm("Are you sure") == false){ 
+    return
+  }
+
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+
+  await api(
+    `/project/file/delete`,
+    {
+      method: "DELETE",
+      body: {
+        user_id: user.id,
+        project_id: projectID,
+        file_name: filename
+      }
+    }
+  );
+
+  getProjectFiles()
+
+}
 
   return (
     <main className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
@@ -23,21 +100,36 @@ export default function DashboardPage() {
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
-
         {/* File Explorer */}
         <aside className="w-64 border-r border-white/10 bg-slate-900 p-4 overflow-y-auto shrink-0">
           <h2 className="font-semibold mb-4">Files</h2>
 
           <div className="space-y-2 text-sm text-slate-300">
-            <p>📁 src</p>
-            <p className="ml-4">📄 page.tsx</p>
-            <p className="ml-4">📄 layout.tsx</p>
+  {files.map((p: any) => (
+    <div
+      key={p}
+      className="flex items-center justify-between bg-slate-800/60 border border-white/5 rounded-xl px-4 py-3"
+    >
+      <p
+        title={p}
+        className="truncate max-w-[220px] cursor-default"
+      >
+        📄 {p}
+      </p>
 
-            <p>📁 components</p>
-            <p className="ml-4">📄 Navbar.tsx</p>
-
-            <p>📄 styles.css</p>
-          </div>
+      <button
+        onClick={() => deleteFile(p)}
+        className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-500/20 hover:bg-red-500 transition shrink-0"
+      >
+        <img
+          src="/delete-icon.png"
+          alt="delete"
+          className="w-4 h-4"
+        />
+      </button>
+    </div>
+  ))}
+</div>
         </aside>
 
         {/* Editor + Terminal */}

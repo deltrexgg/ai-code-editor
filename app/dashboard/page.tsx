@@ -179,6 +179,10 @@ export default function DashboardPage() {
     }
   };
 
+  function SetProjectID(projectID: string) {
+    sessionStorage.setItem("projectid", projectID);
+  }
+
   async function getProjectsList(userID: string) {
   try {
     const data = await api(
@@ -262,6 +266,11 @@ export default function DashboardPage() {
 
                 <a
                   href="/code"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    SetProjectID(p.id);
+                    router.push("/code");
+                  }}
                   className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold"
                 >
                   Open
