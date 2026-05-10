@@ -173,6 +173,8 @@ export default function DashboardPage() {
 
       setShowFilesModal(false)
 
+      getProjectsList(user.id)
+
     } catch (err) {
       console.error(err);
       alert("Failed to create project");
@@ -260,7 +262,7 @@ export default function DashboardPage() {
                 <div>
                   <h3 className="font-semibold">{p.project_name}</h3>
                   <p className="text-sm text-slate-400">
-                    {p.tech_stack} • {p.created_at}
+                    {p.tech_stack} • {new Date(p.created_at).toLocaleString()}
                   </p>
                 </div>
 
@@ -271,7 +273,7 @@ export default function DashboardPage() {
                     SetProjectID(p.id);
                     router.push("/code");
                   }}
-                  className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold"
+                  className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold flex items-center justify-center"
                 >
                   Open
                 </a>

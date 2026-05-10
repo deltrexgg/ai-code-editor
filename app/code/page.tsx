@@ -12,12 +12,12 @@ export default function DashboardPage() {
   useAuthRedirectToRoot()
 
   const [chatOpen, setChatOpen] = useState(false);
-  const [files, setFiles] = useState([])
+  const [files, setFiles] = useState<string[]>([])
 
   const [currentFile, setCurrentFile] = useState("")
   const [fileText, setFileText] = useState("")
 
-  const [toast, setToast] = useState<{
+  const [toast, setToast] = useState<{ 
     message: string;
     type: "success" | "error";
   } | null>(null);
@@ -235,6 +235,12 @@ async function saveFile() {
 }
 
 async function publishProject() {
+  
+  if (!files.includes("index.html")) {
+  showToast("index.html file required", "error");
+  return;
+  }
+
   const projectID = sessionStorage.getItem("projectid");
 
   if (!projectID) {
@@ -272,9 +278,10 @@ async function redirectLink() {
     return;
   }
 
-  // if (!files.includes("index.html",0)) {
-  //   showToast("index.html file required","error")
-  // }
+  if (!files.includes("index.html")) {
+  showToast("index.html file required", "error");
+  return;
+  }
 
   const link =
     "http://192.168.29.200:9002/project-files/" +
