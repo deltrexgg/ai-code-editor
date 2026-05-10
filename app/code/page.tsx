@@ -22,14 +22,35 @@ export default function DashboardPage() {
     type: "success" | "error";
   } | null>(null);
 
+  const [project, setProject] = useState<{
+    project_name: string;
+    tech_stack: string;
+    description: string;
+    is_published:boolean;
+  } | null>(null)
+
   useEffect(() => {
 
     getProjectFiles()
+    projectDetails()
   }, [])
 
-  useEffect(() => {
-    
-  },[currentFile])
+async function projectDetails() {
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const data = await api(`/project/info?project_id=${projectID}`,
+    {
+      method: "GET"
+    }
+  )
+
+  setProject(data.data)
+}
 
 async function getProjectFiles() {
 
@@ -213,6 +234,55 @@ async function saveFile() {
   
 }
 
+async function publishProject() {
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+
+  await api("/project/publish", {
+    method: "POST",
+    body: {
+      user_id: user.id,
+      project_id: projectID
+    }
+  })
+
+  projectDetails()
+
+  showToast("Project Published", "success")
+}
+
+async function redirectLink() {
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  // if (!files.includes("index.html",0)) {
+  //   showToast("index.html file required","error")
+  // }
+
+  const link =
+    "http://192.168.29.200:9002/project-files/" +
+    projectID +
+    "/index.html";
+
+  window.open(link, "_blank");
+}
 
 
   return (
@@ -234,9 +304,25 @@ async function saveFile() {
       <header className="h-14 border-b border-white/10 px-6 flex items-center justify-between shrink-0">
         <a href="/dashboard"><h1 className="font-bold text-xl">AI Agent Code Studio</h1></a>
 
-        <button className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-semibold">
-          Publish
-        </button>
+        {project?.project_name} <span className="text-xs"> {project?.tech_stack} </span>
+
+        <span className="flex items-center gap-2">
+  <button
+    onClick={publishProject}
+    className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-semibold"
+  >
+    {project?.is_published ? "Re-Publish" : "Publish"}
+  </button>
+
+  {project?.is_published && (
+    <button
+      className="px-3 py-2 bg-cyan-400 text-slate-950 rounded-xl font-semibold"
+      onClick={redirectLink}
+    >
+      Link
+    </button>
+  )}
+</span>
       </header>
 
       {/* Main Layout */}
@@ -285,13 +371,13 @@ async function saveFile() {
 
           {/* Editor Header */}
           <div className="h-10 border-b border-white/10 px-4 flex items-center text-sm text-slate-300 shrink-0">
-            {currentFile} 
+           
             <button
   onClick={saveFile}
   className="px-4 text-slate-200 hover:text-white hover:scale-105 transition"
 >
   save
-</button>
+</button> {currentFile} 
           </div>
 
           {/* Editor */}
