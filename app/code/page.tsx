@@ -3,13 +3,25 @@ import { useEffect, useState } from "react";
 import { useAuthRedirectToRoot } from "../lib/auth_middleware";
 import { useRouter } from "next/navigation";
 import { api } from "../lib/api";
+import { useRef } from "react";
+import { Terminal } from "@xterm/xterm";
+import "@xterm/xterm/css/xterm.css";
+import { FitAddon } from "@xterm/addon-fit";
+
 
 
 export default function DashboardPage() {
 
+  const serverURL = "localhost:8080"
+  const bucketURL = "192.168.29.200:9002"
+  const aiURL     = "http://192.168.29.200:8080"
+
   const router = useRouter();
 
   useAuthRedirectToRoot()
+
+  const terminalRef = useRef<HTMLDivElement | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
 
   const [chatOpen, setChatOpen] = useState(false);
   const [files, setFiles] = useState<string[]>([])
@@ -28,6 +40,79 @@ export default function DashboardPage() {
     description: string;
     is_published:boolean;
   } | null>(null)
+
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    fitAddonRef.current?.fit();
+  }, 350);
+
+  return () => clearTimeout(timer);
+}, [chatOpen]);
+
+  useEffect(() => {
+  const projectID = sessionStorage.getItem("projectid");
+
+  if (!projectID) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const rawUser = sessionStorage.getItem("user");
+
+  if (!rawUser) {
+    router.push("/dashboard");
+    return;
+  }
+
+  const user = JSON.parse(rawUser);
+
+
+  if (!terminalRef.current) return;
+
+  const term = new Terminal({
+    cursorBlink: true,
+    fontSize: 14,
+    theme: {
+      background: "#000000",
+      foreground: "#00ffea",
+      cursor: "#00ffea",
+    },
+  });
+
+  term.open(terminalRef.current);
+
+  term.write("Connecting to server...\r\n");
+  const fitAddon = new FitAddon();
+  fitAddonRef.current = fitAddon;
+
+  term.loadAddon(fitAddon);
+  fitAddon.fit();
+
+  const socket = new WebSocket(`ws://${serverURL}/terminal`);
+
+  socket.onopen = () => {
+    term.write("Connected!\r\n");
+    socket.send(`cd ./project-files/${user.id}/${projectID}\r`);
+  };
+
+  socket.onmessage = (e) => {
+    term.write(e.data);
+  };
+
+  socket.onclose = () => {
+    term.write("\r\nConnection closed.\r\n");
+  };
+
+
+  term.onData((data) => {
+    socket.send(data);
+  });
+
+  return () => {
+    socket.close();
+    term.dispose();
+  };
+}, []);
 
   useEffect(() => {
 
@@ -54,7 +139,7 @@ async function projectDetails() {
 
 async function getProjectFiles() {
 
-   const projectID = sessionStorage.getItem("projectid");
+  const projectID = sessionStorage.getItem("projectid");
 
   if (!projectID) {
     router.push("/dashboard");
@@ -284,7 +369,7 @@ async function redirectLink() {
   }
 
   const link =
-    "http://192.168.29.200:9002/project-files/" +
+    `http://${bucketURL}/project-files/` +
     projectID +
     "/index.html";
 
@@ -353,7 +438,7 @@ async function redirectLink() {
     >
       <p
         title={p}
-        className="truncate max-w-[220px] cursor-default"
+        className="truncate max-w-55 cursor-default"
       >
         📄 {p}
       </p>
@@ -398,11 +483,9 @@ async function redirectLink() {
 </div>
 
           {/* Terminal */}
-          <div className="h-52 border-t border-white/10 bg-black p-4 font-mono text-sm overflow-auto shrink-0">
-            <p className="text-green-400">$ npm run dev</p>
-            <p>Starting development server...</p>
-            <p className="text-cyan-400">Ready on http://localhost:3000</p>
-          </div>
+          <div className="h-52 border-t border-white/10 bg-black shrink-0">
+          <div ref={terminalRef} className="w-full h-full" />
+            </div>
         </section>
 
         {/* AI Chat Sidebar (always mounted) */}
@@ -428,7 +511,7 @@ async function redirectLink() {
           {/* Embedded Chat App */}
           <div className="flex-1 p-3 min-h-0">
             <iframe
-              src="http://192.168.29.200:8080"
+              src={aiURL}
               className="w-full h-full rounded-2xl bg-white"
             />
           </div>
