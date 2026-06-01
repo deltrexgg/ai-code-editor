@@ -14,7 +14,7 @@ export default function DashboardPage() {
 
   const serverURL = "localhost:8080"
   const bucketURL = "192.168.29.200:9002"
-  const aiURL     = "http://192.168.29.200:8080"
+  const aiURL     = "http://72.60.99.249:8080"
 
   const router = useRouter();
 
