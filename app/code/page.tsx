@@ -12,8 +12,8 @@ import { FitAddon } from "@xterm/addon-fit";
 
 export default function DashboardPage() {
 
-  const serverURL = "localhost:8080"
-  const bucketURL = "192.168.29.200:9002"
+  const serverURL = "72.60.99.249:8000"
+  const bucketURL = "72.60.99.249:9000"
   const aiURL     = "http://72.60.99.249:8080"
 
   const router = useRouter();
