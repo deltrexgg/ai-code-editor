@@ -1,6 +1,6 @@
 // lib/api.ts
 
-const BASE_URL = "http://72.60.99.249:8080";
+const BASE_URL = "http://72.60.99.249:8000";
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
